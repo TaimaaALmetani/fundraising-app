@@ -30,8 +30,7 @@ filename = f"donations_{selected_category.replace(' ', '_')}.csv"
 # 📂 Try to read existing donations
 if os.path.exists(filename):
     records = pd.read_csv(filename)
-    total_raised = records['Amount'].astype(float).sum()
-
+    total_raised = pd.to_numeric(records['Amount'], errors='coerce').sum()
 else:
     records = pd.DataFrame(columns=["Name", "University", "Amount", "Date"])
     total_raised = 0
@@ -80,8 +79,9 @@ if submit:
         }
         new_df = pd.DataFrame([new_donation])
         new_df.to_csv(filename, mode="a", header=not os.path.exists(filename), index=False)
+
         records = pd.read_csv(filename)
-        total_raised = records['Amount'].sum()
+        total_raised = pd.to_numeric(records['Amount'], errors='coerce').sum()
 
 # ℹ️ Info
 st.info("If the goal is not met before the deadline, all donations will be refunded automatically.")
@@ -104,6 +104,7 @@ if not records.empty:
 
 # 👣 Footer
 st.caption("Built by Taimaa Almetani 💚 using Streamlit for Social Impact")
+
 
 
 
