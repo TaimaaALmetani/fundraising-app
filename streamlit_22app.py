@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import os
 
 
 st.set_page_config(page_title="Fundraising DApp", layout="centered")
@@ -51,7 +52,8 @@ if st.button("Donate"):
         }
         df = pd.DataFrame([donation_data])
         filename = f"donations_{selected_campaign.replace(' ', '_')}.csv"
-df.to_csv(filename, mode="a", header=not pd.io.common.file_exists(filename), index=False)
+df.to_csv(filename, mode="a", header=not os.path.exists(filename), index=False)
+
 
 
 
