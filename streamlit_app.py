@@ -81,6 +81,9 @@ filename = f"donations_{selected_campaign.replace(' ', '_')}.csv"
 try:
     records = pd.read_csv(filename)
     st.dataframe(records)
+    # إظهار عدد المتبرعين
+    num_donors = len(records)
+    st.success(f"🙋 Total Donors for this category: {num_donors}")
 except FileNotFoundError:
     st.info("No donations recorded yet.")
 
