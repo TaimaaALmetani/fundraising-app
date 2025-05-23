@@ -9,9 +9,25 @@ st.title("🎓 Fundraising for Students in Need")
 st.subheader("This app helps students collect donations transparently.")
 
 # Campaign details
-target_amount = 1000
-current_amount = 630
-deadline = "2025-06-10"
+st.sidebar.title("🎯 Select Campaign")
+campaigns = ["Tuition Support", "Medical Aid", "Orphan Fund"]
+selected_campaign = st.sidebar.selectbox("Choose a campaign:", campaigns)
+
+if selected_campaign == "Tuition Support":
+    target_amount = 1000
+    current_amount = 630
+    deadline = "2025-06-10"
+
+elif selected_campaign == "Medical Aid":
+    target_amount = 1500
+    current_amount = 850
+    deadline = "2025-07-15"
+
+elif selected_campaign == "Orphan Fund":
+    target_amount = 2000
+    current_amount = 1200
+    deadline = "2025-08-01"
+
 
 st.markdown(f"""
 **Goal:** ${target_amount}  
@@ -34,7 +50,9 @@ if st.button("Donate"):
             "Date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         df = pd.DataFrame([donation_data])
-        df.to_csv("donations.csv", mode="a", header=not pd.io.common.file_exists("donations.csv"), index=False)
+        filename = f"donations_{selected_campaign.replace(' ', '_')}.csv"
+df.to_csv(filename, mode="a", header=not pd.io.common.file_exists(filename), index=False)
+
 
 
 # Info
@@ -59,8 +77,10 @@ st.subheader("📊 Donation Progress")
 st.pyplot(fig)
 st.markdown("## 🧾 Donation Records")
 
+filename = f"donations_{selected_campaign.replace(' ', '_')}.csv"
+
 try:
-    records = pd.read_csv("donations.csv")
+    records = pd.read_csv(filename)
     st.dataframe(records)
 except FileNotFoundError:
     st.info("No donations recorded yet.")
