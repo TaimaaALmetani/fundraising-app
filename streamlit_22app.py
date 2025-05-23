@@ -45,15 +45,16 @@ if st.button("Donate"):
     if donor_name.strip() == "":
         st.warning("Please enter your name before donating.")
     else:
-    st.success("✅ Donation recorded successfully!")
-    donation_data = {
-        "Name": donor_name,
-        "Amount": donation,
-        "Date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    df = pd.DataFrame([donation_data])
-    filename = f"donations_{selected_campaign.replace(' ', '_')}.csv"
-    df.to_csv(filename, mode="a", header=not os.path.exists(filename), index=False)
+        st.success("✅ Donation recorded successfully!")
+        donation_data = {
+            "Name": donor_name,
+            "Amount": donation,
+            "Date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        df = pd.DataFrame([donation_data])
+        filename = f"donations_{selected_campaign.replace(' ', '_')}.csv"
+        df.to_csv(filename, mode="a", header=not os.path.exists(filename), index=False)
+
 
 
 
