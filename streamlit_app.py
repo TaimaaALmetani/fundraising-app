@@ -1,29 +1,90 @@
 import streamlit as st
+import pandas as pd
+import os
+import datetime
+import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Fundraising DApp", layout="centered")
+# إعداد الصفحة
+st.set_page_config(page_title="University Tuition Support", layout="centered")
 
-st.title("🎓 Fundraising for Students in Need")
-st.subheader("This app helps students collect donations transparently.")
+# عنوان الصفحة
+st.title("🎓 Fundraising for University Students")
+st.subheader("This app helps financially struggling students receive donations transparently.")
 
-# Campaign details
-target_amount = 1000
-current_amount = 630
-deadline = "2025-06-10"
+# تحديد الحملة
+st.sidebar.title("🎯 Select Donation Category")
+campaigns = {
+    "💥 Urgent Need": {
+        "target": 3000,
+        "current": 1800,
+        "deadline": "2025-06-10"
+    },
+    "⚠️ Medium Need": {
+        "target": 2000,
+        "current": 850,
+        "deadline": "2025-07-15"
+    },
+    "✅ Simple Need": {
+        "target": 1000,
+        "current": 300,
+        "deadline": "2025-08-01"
+    }
+}
+selected_campaign = st.sidebar.selectbox("Choose a student need level:", list(campaigns.keys()))
+campaign_data = campaigns[selected_campaign]
+target_amount = campaign_data["target"]
+current_amount = campaign_data["current"]
+deadline = campaign_data["deadline"]
 
+# عرض تفاصيل الحملة
 st.markdown(f"""
-**Goal:** ${target_amount}  
-**Raised so far:** ${current_amount}  
-**Deadline:** {deadline}
+**🎯 Goal:** ${target_amount}  
+**📈 Raised so far:** ${current_amount}  
+**⏰ Deadline:** {deadline}
 """)
 
-# Donation input
+# إدخال بيانات المتبرع
+donor_name = st.text_input("Enter your name:")
 donation = st.number_input("Enter your donation amount ($):", min_value=1, step=1)
 
+# زر التبرع
 if st.button("Donate"):
-    st.success("✅ Donation simulated! (blockchain integration coming soon)")
+    if donor_name.strip() == "":
+        st.warning("Please enter your name before donating.")
+    else:
+        st.success("✅ Donation recorded successfully!")
+        donation_data = {
+            "Name": donor_name,
+            "Amount": donation,
+            "Date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        df = pd.DataFrame([donation_data])
+        filename = f"donations_{selected_campaign.replace(' ', '_')}.csv"
+        df.to_csv(filename, mode="a", header=not os.path.exists(filename), index=False)
 
-# Info
+# ملاحظة عامة
 st.info("If the goal is not met before the deadline, all donations will be refunded automatically.")
 
+# عرض شريط التقدم (Pie Chart)
+progress = [current_amount, target_amount - current_amount]
+labels = ['Raised', 'Remaining']
+colors = ['green', 'lightgray']
+fig, ax = plt.subplots()
+ax.pie(progress, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+ax.axis('equal')
+st.subheader("📊 Donation Progress")
+st.pyplot(fig)
+
+# عرض السجلات
+st.markdown("## 🧾 Donation Records")
+filename = f"donations_{selected_campaign.replace(' ', '_')}.csv"
+try:
+    records = pd.read_csv(filename)
+    st.dataframe(records)
+except FileNotFoundError:
+    st.info("No donations recorded yet.")
+
+# توقيع
 st.markdown("---")
-st.caption("Built by Taimaa Almetani 💚 using Streamlit + Web3 Vision")
+st.caption("Built by Taimaa Almetani 💚 using Streamlit for Social Impact")
+
