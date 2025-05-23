@@ -30,7 +30,8 @@ filename = f"donations_{selected_category.replace(' ', '_')}.csv"
 # 📂 Try to read existing donations
 if os.path.exists(filename):
     records = pd.read_csv(filename)
-    total_raised = records['Amount'].sum()
+    total_raised = records['Amount'].astype(float).sum()
+
 else:
     records = pd.DataFrame(columns=["Name", "University", "Amount", "Date"])
     total_raised = 0
