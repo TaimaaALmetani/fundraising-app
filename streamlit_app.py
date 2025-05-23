@@ -4,17 +4,21 @@ import os
 import datetime
 import matplotlib.pyplot as plt
 
+# إعداد الجلسة لتفعيل إعادة الضبط
+if "reset" not in st.session_state:
+    st.session_state["reset"] = False
+
 st.set_page_config(page_title="Fundraising DApp", layout="centered")
 
 st.title("🎓 Fundraising for University Students")
 st.subheader("This app helps financially struggling students receive donations transparently.")
 
-# 🧭 Sidebar to select donation category
+# الشريط الجانبي لاختيار الفئة
 st.sidebar.title("🎯 Select Donation Category")
 categories = ["Urgent Need", "Moderate Need", "Simple Need"]
 selected_category = st.sidebar.selectbox("Choose a student need level:", categories)
 
-# 💰 Set donation goal, raised amount, deadline based on category
+# معلومات الحملة حسب الفئة
 if selected_category == "Urgent Need":
     target_amount = 3000
     current_amount = 1800
@@ -28,26 +32,25 @@ elif selected_category == "Simple Need":
     current_amount = 300
     deadline = "2025-08-01"
 
-# 🪧 Display campaign information
+# عرض معلومات الحملة
 st.markdown(f"""
 🎯 **Goal:** ${target_amount}  
 📄 *Raised so far* : **${current_amount}**  
 ⏰ **Deadline:** {deadline}
 """)
 
-# 📥 Donation form with university + reset button
+# نموذج التبرع
 with st.form("donation_form"):
-    donor_name = st.text_input("Enter your name:")
-    
+    donor_name = st.text_input("Enter your name:", value="" if st.session_state["reset"] else "")
     university = st.selectbox("Select the student's university:", [
         "Yarmouk University",
         "Jordan University of Science and Technology",
         "Mu'tah University",
         "Private University",
         "Other"
-    ])
-    
-    donation = st.number_input("Enter your donation amount ($):", min_value=1, step=1)
+    ], index=0 if st.session_state["reset"] else 0)
+
+    donation = st.number_input("Enter your donation amount ($):", min_value=1, step=1, value=1 if st.session_state["reset"] else 1)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -55,10 +58,15 @@ with st.form("donation_form"):
     with col2:
         reset = st.form_submit_button("🔁 Reset")
 
+# التعامل مع زر Reset
 if reset:
-    st.experimental_rerun()
+    st.session_state["reset"] = True
 
-# ✅ Save donation
+# إعادة تعيين الحالة بعد الاستخدام
+if st.session_state["reset"]:
+    st.session_state["reset"] = False
+
+# حفظ التبرع
 if submit:
     if donor_name.strip() == "":
         st.warning("Please enter your name before donating.")
@@ -77,10 +85,10 @@ if submit:
         filename = f"donations_{selected_category.replace(' ', '_')}.csv"
         df.to_csv(filename, mode="a", header=not os.path.exists(filename), index=False)
 
-# ℹ️ Additional info
+# تنبيه
 st.info("If the goal is not met before the deadline, all donations will be refunded automatically.")
 
-# 📊 Pie chart for donation progress
+# رسم مخطط دائري
 progress = [current_amount, target_amount - current_amount]
 labels = ['Raised', 'Remaining']
 colors = ['green', 'lightgray']
@@ -90,7 +98,7 @@ ax.axis('equal')
 st.subheader("📊 Donation Progress")
 st.pyplot(fig)
 
-# 📂 Load and show donation records
+# عرض التبرعات المسجلة
 st.markdown("## 🧾 Donation Records")
 filename = f"donations_{selected_category.replace(' ', '_')}.csv"
 try:
@@ -100,8 +108,9 @@ try:
 except FileNotFoundError:
     st.info("No donations recorded yet.")
 
-# 👣 Footer
+# تذييل الصفحة
 st.caption("Built by Taimaa Almetani 💚 using Streamlit for Social Impact")
+
 
 
 
