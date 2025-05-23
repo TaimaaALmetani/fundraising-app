@@ -9,62 +9,47 @@ st.set_page_config(page_title="Fundraising DApp", layout="centered")
 st.title("🎓 Fundraising for University Students")
 st.subheader("This app helps financially struggling students receive donations transparently.")
 
-# Sidebar for donation categories
+# 🧭 Sidebar to select donation category
 st.sidebar.title("🎯 Select Donation Category")
 categories = ["Urgent Need", "Moderate Need", "Simple Need"]
 selected_category = st.sidebar.selectbox("Choose a student need level:", categories)
 
-# Set goal and deadline
+# 💰 Set donation goal, raised amount, deadline based on category
 if selected_category == "Urgent Need":
     target_amount = 3000
+    current_amount = 1800
     deadline = "2025-06-10"
 elif selected_category == "Moderate Need":
     target_amount = 2000
+    current_amount = 1000
     deadline = "2025-07-01"
-else:
+elif selected_category == "Simple Need":
     target_amount = 1000
+    current_amount = 300
     deadline = "2025-08-01"
 
-filename = f"donations_{selected_category.replace(' ', '_')}.csv"
-
-# Load current donations
-if os.path.exists(filename):
-    records = pd.read_csv(filename)
-    current_amount = records["Amount"].sum()
-else:
-    records = pd.DataFrame(columns=["Name", "University", "Amount", "Date"])
-    current_amount = 0
-
-# Display campaign info
+# 🪧 Display campaign information
 st.markdown(f"""
 🎯 **Goal:** ${target_amount}  
-📄 *Raised so far:* **${current_amount}**  
+📄 *Raised so far* : **${current_amount}**  
 ⏰ **Deadline:** {deadline}
 """)
 
-# Donation form
-st.markdown("---")
-st.markdown("### 💸 Make a Donation")
+# 📥 Donation form with reset button
 with st.form("donation_form"):
     donor_name = st.text_input("Enter your name:")
-    university = st.selectbox("Select the student's university:", [
-        "Yarmouk University",
-        "Jordan University of Science and Technology",
-        "Mu'tah University",
-        "Private University",
-        "Other"
-    ])
     donation = st.number_input("Enter your donation amount ($):", min_value=1, step=1)
+
     col1, col2 = st.columns(2)
     with col1:
         submit = st.form_submit_button("💖 Donate")
     with col2:
-        clear = st.form_submit_button("🔁 Reset")
+        reset = st.form_submit_button("🔁 Reset")
 
-if clear:
-    st.session_state["donation_form"] = ""
+if reset:
     st.experimental_rerun()
 
+# ✅ Save donation
 if submit:
     if donor_name.strip() == "":
         st.warning("Please enter your name before donating.")
@@ -75,34 +60,39 @@ if submit:
 
         donation_data = {
             "Name": donor_name,
-            "University": university,
             "Amount": donation,
             "Date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
-        new_record = pd.DataFrame([donation_data])
-        new_record.to_csv(filename, mode="a", header=not os.path.exists(filename), index=False)
-        st.experimental_rerun()
+        df = pd.DataFrame([donation_data])
+        filename = f"donations_{selected_category.replace(' ', '_')}.csv"
+        df.to_csv(filename, mode="a", header=not os.path.exists(filename), index=False)
 
-# Show donation summary only if there are donations
-if not records.empty:
-    st.markdown("---")
-    st.subheader("📊 Donation Progress")
-    progress = [current_amount, target_amount - current_amount]
-    labels = ['Raised', 'Remaining']
-    colors = ['green', 'lightgray']
-    fig, ax = plt.subplots()
-    ax.pie(progress, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')
-    st.pyplot(fig)
+# ℹ️ Additional info
+st.info("If the goal is not met before the deadline, all donations will be refunded automatically.")
 
-    st.markdown("## 🧾 Donation Records")
+# 📊 Pie chart for donation progress
+progress = [current_amount, target_amount - current_amount]
+labels = ['Raised', 'Remaining']
+colors = ['green', 'lightgray']
+fig, ax = plt.subplots()
+ax.pie(progress, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+ax.axis('equal')
+st.subheader("📊 Donation Progress")
+st.pyplot(fig)
+
+# 📂 Load and show donation records
+st.markdown("## 🧾 Donation Records")
+filename = f"donations_{selected_category.replace(' ', '_')}.csv"
+try:
+    records = pd.read_csv(filename)
     st.markdown(f"🎉 **Number of Donors:** {len(records)}")
     st.dataframe(records)
-else:
-    st.info("No donations recorded yet. Only the target amount is shown.")
+except FileNotFoundError:
+    st.info("No donations recorded yet.")
 
-# Footer
+# 👣 Footer
 st.caption("Built by Taimaa Almetani 💚 using Streamlit for Social Impact")
+
 
 
 
